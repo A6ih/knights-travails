@@ -1,11 +1,11 @@
-const adjacencyList = new Map();
+const graph = new Map();
 
 function addNode(node) {
-  adjacencyList.set(node, new Set());
+  graph.set(node, new Set());
 }
 
 function addEdge(node1, node2) {
-  adjacencyList.get(node1).add(node2);
+  graph.get(node1).add(node2);
 }
 
 function knightMoves(start, end) {
@@ -26,11 +26,14 @@ function knightMoves(start, end) {
 
   gameBoard(startNode, end);
 
-  return adjacencyList;
+  const path = search(graph, start.toString(), end.toString());
+
+  console.log(`You made it in ${path.length - 1} moves! Here's your path:`);
+  path.forEach((path) => console.log(path.split(",").map(Number)));
 }
 
 function gameBoard(start, end) {
-  if (adjacencyList.has(start.toString())) return;
+  if (graph.has(start.toString())) return;
 
   if (
     start[0] < 0 ||
@@ -81,11 +84,37 @@ function gameBoard(start, end) {
     }
   }
 
-  adjacencyList.get(start.toString()).forEach((element) => {
+  graph.get(start.toString()).forEach((element) => {
     gameBoard(element.split(",").map(Number), end);
   });
 
   return;
 }
 
-console.log(knightMoves([0, 0], [3, 3]));
+function search(adjacencyList, start, end) {
+  const cameFrom = new Map();
+  cameFrom.set(start, null);
+  const queue = [start];
+  while (queue.length > 0) {
+    const currentNode = queue.shift();
+    if (currentNode === end) return retracePath(cameFrom, end);
+    const childNodes = adjacencyList.get(currentNode);
+    for (const child of childNodes) {
+      if (!cameFrom.has(child)) {
+        cameFrom.set(child, currentNode);
+        queue.push(child);
+      }
+    }
+  }
+}
+
+function retracePath(cameFrom, node) {
+  const path = [];
+  while (cameFrom.has(node)) {
+    path.push(node);
+    node = cameFrom.get(node);
+  }
+  return path.reverse();
+}
+
+knightMoves([0,0],[7,7]);
